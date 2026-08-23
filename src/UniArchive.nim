@@ -2,5 +2,5 @@
 # Copyright 2026 lituus-lab
 ## UniArchive public API.
 
-import UniArchive/zip
-export zip
+import UniArchive/[extract, zip]
+export extract, zip
