@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 lituus-lab
+
+[[reference]]
+name = "beagle.py"
+author = "Mark Adler"
+year = 2025
+purpose = "non-overlapping ZIP record oracle and design reference"
+license = "Zlib"
+bundled = false
+url = "https://stackoverflow.com/a/79600147"
+
+[[reference]]
+name = "SafeZip"
+purpose = "secure extraction design reference and future behavioral oracle"
+license = "MIT"
+bundled = false
+url = "https://github.com/barseghyanartur/safezip"
+
+[[reference]]
+name = "libarchive"
+purpose = "ZIP interoperability oracle"
+license = "BSD-2-Clause"
+bundled = false
+url = "https://github.com/libarchive/libarchive"
