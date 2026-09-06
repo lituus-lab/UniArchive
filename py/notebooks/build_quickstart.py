@@ -38,8 +38,10 @@ existing output — a caller that wants replacement removes the file first."""),
 work = tempfile.mkdtemp()
 os.chdir(work)
 os.makedirs("data", exist_ok=True)
-open("notes.txt", "w").write("one\\n")
-open("data/values.csv", "w").write("a,b\\n1,2\\n")
+# newline="": text mode would write CRLF on Windows, changing both the bytes
+# read back and the archive's size.
+open("notes.txt", "w", newline="").write("one\\n")
+open("data/values.csv", "w", newline="").write("a,b\\n1,2\\n")
 
 uniarchive.create("demo.zip", ["notes.txt", "data"])
 uniarchive.version(), os.path.getsize("demo.zip")"""),
@@ -55,7 +57,8 @@ Every payload is verified in a private staging tree; the destination appears
 only once the whole archive has succeeded. Selectors pick exact files or whole
 subtrees."""),
     ("code", """uniarchive.extract("demo.zip", "out")
-sorted(os.path.relpath(os.path.join(r, f), "out")
+# relpath returns the platform separator; the archive's own names use "/".
+sorted(os.path.relpath(os.path.join(r, f), "out").replace(os.sep, "/")
        for r, _, fs in os.walk("out") for f in fs)"""),
     ("code", """uniarchive.extract("demo.zip", "partial", ["notes.txt"])
 sorted(os.listdir("partial"))"""),
