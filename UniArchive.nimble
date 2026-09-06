@@ -201,8 +201,12 @@ task coverage, "LCOV + HTML coverage report for the Nim sources (needs lcov)":
   # gcov and lcov driven directly, no coco. Linux and macOS only.
   # --debugger:native attributes lines to the .nim sources, not the generated C.
   # --include keeps stdlib out of the capture, where lcov 2.x aborts on Nim's
-  # codegen. Together they leave nothing to suppress: no --ignore-errors here,
-  # so a real problem still fails the build.
+  # codegen.
+  # `mismatch` is the one suppression, and it is not optional: lcov 2.x checks
+  # its own end line for a function against gcov's, and Nim's generated
+  # destructors disagree -- zip.nim's rttiDestroy was the first to hit it.
+  # Removing one only advances lcov to the next, so there is no source-level
+  # fix. Every other lcov error still fails the build.
   let cache = "build/covcache"
   rmDir cache
   rmDir "coverage"
@@ -211,7 +215,17 @@ task coverage, "LCOV + HTML coverage report for the Nim sources (needs lcov)":
        " -o:build/test_coverage tests/test_zip.nim"
   exec "./build/test_coverage"
   exec "lcov --capture --directory " & cache & " --base-directory ." &
-       " --include \"*/src/UniArchive/*\" --output-file lcov.info --quiet"
-  exec "genhtml lcov.info --output-directory coverage --legend --quiet"
+       " --include \"*/src/UniArchive/*\" --output-file lcov.info --quiet --ignore-errors mismatch"
+  # gcov can attribute a final generated expression to EOF + 1, and that one
+  # artefact answers to two names: lcov 2.0, the version ubuntu-latest installs,
+  # calls it `unmapped` and rejects `range` as a category outright, while 2.5
+  # calls it `range` and can filter those lines away. Ask which one is there
+  # rather than assume.
+  let genhtmlRange =
+    if gorgeEx("genhtml --version").output.contains("LCOV version 2.0"):
+      " --ignore-errors unmapped"
+    else: " --filter range --ignore-errors range"
+  exec "genhtml lcov.info" & genhtmlRange &
+       " --output-directory coverage --legend --quiet"
   exec "lcov --summary lcov.info"
   done "coverage"
